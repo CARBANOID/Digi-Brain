@@ -52,8 +52,8 @@ export const SearchBar = memo(() =>{
                 }
             }
         )
-        console.log(response.data.searchedContent)
         FileContext.setContents(response.data.searchedContent) ; 
+        queryRef.current!.value = query ;
     }
 
     return(

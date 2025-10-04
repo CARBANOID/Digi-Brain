@@ -24,7 +24,18 @@ export const PopUpBox = memo(({ isPopUpOpen , ClosePopUpBox , RefreshContent  } 
     const contentRef     = useRef<HTMLSelectElement>(null) ; 
     
     const fileContext    = useContext(currentFileContext) ;
-    const addContent = async() => {        
+    const addContent     = async() => {        
+
+        if(titleRef.current!.value == ""){
+            titleRef.current!.focus() ; 
+            return ;
+        } 
+
+        if(linkRef.current!.value == ""){
+            linkRef.current!.focus() ; 
+            return ;
+        }
+        
         await axios.post(`${BACKEND_URL}api/v1/content`,
             {
                 title : titleRef.current!.value,
@@ -87,7 +98,7 @@ export const PopUpBox = memo(({ isPopUpOpen , ClosePopUpBox , RefreshContent  } 
                     </div>
 
                     <div className="pt-3">
-                        <div className="pl-2 font tracking-wide text-sm  text-gray-700"> Title  </div>
+                        <div className="pl-2 font tracking-wide text-sm  text-gray-700"> Title (required)  </div>
                         <Input ref = {titleRef} inputVaraint="TextBox"  size = "md" placeholder={"Enter a title"}/>
 
                         <div className="pl-2 font tracking-wide text-sm  text-gray-700"> Description  </div>
@@ -96,7 +107,7 @@ export const PopUpBox = memo(({ isPopUpOpen , ClosePopUpBox , RefreshContent  } 
                         <div className="pl-2 font tracking-wide text-sm  text-gray-700"> Content Type  </div>
                         <Input ref = {contentRef} inputVaraint="Menu" placeholder = "Content Type" size = "md"/>
                 
-                        <div className="pl-2 font tracking-wide text-sm  text-gray-700"> Link  </div>
+                        <div className="pl-2 font tracking-wide text-sm  text-gray-700"> Link (required) </div>
                         <Input ref = {linkRef} inputVaraint="TextBox"  size = "md" placeholder={"https://example.com"}/>
                     </div>
                     <div className="p-1"></div>
