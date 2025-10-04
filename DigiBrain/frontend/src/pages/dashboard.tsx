@@ -41,24 +41,21 @@ export const DashBoard = ({ share } : { share : boolean } ) => {
     const RefreshFileContentRef = useRef<() => Promise<any>>(async () => {});
       
     return(
-    <currentFileContext.Provider value = {{setContents : setContents,contents : contents ,FileId : FileId ,setFileId : setFileId, ChangePage : ChangePage, RefreshContent : RefreshContent , RefreshFileContentRef : RefreshFileContentRef}} >
+    <currentFileContext.Provider value = {{setContents : setContents,contents : contents ,FileId : FileId ,setFileId : setFileId, 
+    ChangePage : ChangePage, RefreshContent : RefreshContent , RefreshFileContentRef : RefreshFileContentRef , share : share}} >
+
         <div className="bg-gray-100 h-screen w-screen overflow-auto scrollbar-hide">
             <SideBar varaint="primary" share={share} size="sm" title="Digi Brain" ChangePage={ChangePage} SideBarVisible={SideBarVisible} shareBrain={shareBrain} OpenPopUpBox={OpenPopUpBox} />
             {!SideBarVisible && <MenuBar ChangePage={ChangePage} MenuBarVisible ={MenuBarVisible} CloseMenuBar={CloseMenuBar} OpenMenuBar={OpenMenuBar}/>}
+          
             {/* Top Bar with search  */}
             <TopBar popUp={popUp} isBrainShared={isBrainShared} shareBrain={shareBrain} OpenPopUpBox={OpenPopUpBox} onClick={ToggleSideBar} />
-
-            {
-                !share &&
-                <div>
-                    <PopUpBox isPopUpOpen = {popUp} ClosePopUpBox = {ClosePopUpBox} RefreshContent = {RefreshContent} />
-                    <ShareBrain isBrainShared = {isBrainShared}  NotshareBrain = {NotshareBrain} />
-                </div>
-            }
+            <PopUpBox isPopUpOpen = {popUp} ClosePopUpBox = {ClosePopUpBox} RefreshContent = {RefreshContent} />
+            <ShareBrain isBrainShared = {isBrainShared}  NotshareBrain = {NotshareBrain} />
 
             <div className="px-2 mt-35 pl-6 sm:pl-60 md:pl-77 lg:pl-80">
                 <div className="columns-1 lg:gap-0 lg:columns-2 xl:columns-3 ">
-                {contents.map(( {_id,type,title,description,link} : any,index : number) =>  <Card key={index + 1} share = {share} contentId = {_id} RefreshContent = {RefreshContent} varaint="primary" title={title} size="sm" description = {description} ContentType={type} ContentPage={ContentPage} url={link} /> )}
+                {contents.map(( {_id,type,title,description,link} : any) =>  <Card key={_id} share = {share} contentId = {_id} RefreshContent = {RefreshContent} varaint="primary" title={title} size="sm" description = {description} ContentType={type} ContentPage={ContentPage} url={link} /> )}
                 </div>
             </div>
         </div>
@@ -68,7 +65,8 @@ export const DashBoard = ({ share } : { share : boolean } ) => {
 
 
 const TopBar = memo((props:any) =>{
-    const MenuIcon = useRef(IconMap["Menu"]) ; 
+    const MenuIcon    = useRef(IconMap["Menu"]) ; 
+    const FileContext = useContext(currentFileContext) ;
     return(
         <div className={` ${(props.popUp || props.isBrainShared) ? 'opacity-20' : ' bg-white border-2 border-gray-200 border-l-white' } p-3 fixed left-0 right-0 sm:ml-55 md:ml-72 flex justify-between items-center`}>
             <div className='flex items-center'>
@@ -79,10 +77,13 @@ const TopBar = memo((props:any) =>{
                     <SearchBar/>
                 </div>
             </div>
-            <div className='hidden sm:flex gap-4 justify-end '> 
-                <div> <Button varaint="primary" size ="sm" text="Share Brain" hideText={true} startIcon={IconMap["Share"]} onClick={props.shareBrain} /> </div> 
-                <div> <Button varaint="secondary" size ="sm" text="Add Content"hideText={true} startIcon={IconMap['Plus']} onClick={props.OpenPopUpBox} /> </div>
-            </div>
+            {
+                !FileContext.share && 
+                <div className='hidden sm:flex gap-4 justify-end '> 
+                    <div> <Button varaint="primary" size ="sm" text="Share Brain" hideText={true} startIcon={IconMap["Share"]} onClick={props.shareBrain} /> </div> 
+                    <div> <Button varaint="secondary" size ="sm" text="Add Content"hideText={true} startIcon={IconMap['Plus']} onClick={props.OpenPopUpBox} /> </div>
+                </div>
+            }
         </div>
     );
 })

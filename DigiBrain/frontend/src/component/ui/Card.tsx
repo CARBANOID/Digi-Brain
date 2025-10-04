@@ -90,7 +90,7 @@ break-inside-avoid ensures each card stays intact inside its column, making the 
 
 export const Card = memo((props : CardProps) => {
 
-    const ContentIcon = useRef(IconMap[props.ContentType]) ;
+    const ContentIcon = IconMap[props.ContentType] ; // The Content Icon needs to re-render 
     const ShareIcon   = useRef(IconMap["Share"])           ;
     const DeleteIcon  = useRef(IconMap["Delete"])          ;
     const FileContext = useContext(currentFileContext)     ; 
@@ -118,7 +118,7 @@ export const Card = memo((props : CardProps) => {
                 <div className="flex justify-between items-start">
                     <div className="flex">
                         <div className="pr-2 text-gray-700 "> 
-                            {<ContentIcon.current size = {"lg"} />} 
+                            {<ContentIcon size = {"lg"} />} 
                         </div>
                         
                         <div className="text-lg font-semibold tracking-wide pt-[2px] break-words  max-w-50"> 

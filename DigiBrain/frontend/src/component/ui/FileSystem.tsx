@@ -26,7 +26,8 @@ export const FileSystem = memo(() => {
     const {Folders,setFolders,RefreshFolders} = useGetFolder() ; 
     const RefreshCurrentFolder = async() => setFolders(await RefreshFolders()) ;
     const [FolderInputScreen,SetFolderInputScreen] = useState(false) ; 
-    
+
+    const FileContext = useContext(currentFileContext) ;
 
     return(
         <div className=" items-center p-3 sm:p-2 md:p-4 "> 
@@ -41,9 +42,12 @@ export const FileSystem = memo(() => {
                 <div className="mt-2"> 
                     <div className={`flex rounded-md ${FolderInputScreen ? " border-2  bg-gray-300" : "" }  items-center`}>
 
-                        <div className={`p-1 rounded-md cursor-pointer hover:bg-slate-300 ${ FolderInputScreen ? "" : " border-1 bg-gray-300" } `} onClick={ () => SetFolderInputScreen(true)}>
-                            <AddFolderIcon.current size="sm" />
-                        </div>
+                        {
+                            !FileContext.share &&
+                            <div className={`p-1 rounded-md cursor-pointer hover:bg-slate-300 ${ FolderInputScreen ? "" : " border-1 bg-gray-300" } `} onClick={ () => SetFolderInputScreen(true)}>
+                                <AddFolderIcon.current size="sm" />
+                            </div>
+                        }
 
                         {
                         FolderInputScreen && 
@@ -107,6 +111,8 @@ const FolderDiv = memo((props : FolderFileDivProps) => {
                         </div>
                      </div>
                       
+                   {  
+                   !FileContext.share &&
                     <div className="flex gap-2 items-center">
                          <div onClick={() => {setAddFolder(true) ; setAddFile(false)} }> <AddFolderIcon.current size="sm" customSize="size-5"/> </div>
                          <div onClick={() => {setAddFile(true) ; setAddFolder(false)} }>  <AddFileIcon.current size="sm" customSize="size-4"/> </div>
@@ -119,6 +125,7 @@ const FolderDiv = memo((props : FolderFileDivProps) => {
                          } }>  
                          <DeleteIcon.current size="sm" customSize="size-[18px]"/> </div>
                      </div>
+                     }
                  </div>
             </div>
 
@@ -195,15 +202,18 @@ const FileDiv = ({FileId , ParentFolderId , RefreshParentFolder} : FolderFileDiv
                     { contents.FileName } 
                 </div>
             </div>
-                      
-            <div className="flex">
-                 <div onClick={async() => 
-                    {
-                        await useDeleteFileFolder(undefined,FileId,ParentFolderId)
-                        await RefreshParentFolder() ;
-                    } 
-                }>  <DeleteIcon.current size="sm" customSize="size-[18px]"/> </div>
-            </div>
+
+            { 
+            !fsContext.share &&        
+                <div className="flex">
+                    <div onClick={async() => 
+                        {
+                            await useDeleteFileFolder(undefined,FileId,ParentFolderId)
+                            await RefreshParentFolder() ;
+                        } 
+                    }>  <DeleteIcon.current size="sm" customSize="size-[18px]"/> </div>
+                </div>
+            }
         </div>
     </div>
     )

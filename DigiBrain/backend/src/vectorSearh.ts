@@ -1,7 +1,7 @@
 import { VoyageAIClient } from "voyageai";
 import * as dotenv from 'dotenv' ;
 import type { EmbedResponse } from "voyageai/api/index.js";
-import { ContentCollection, QueryCollection } from "./db.js";
+import { ContentCollection, FileCollection, QueryCollection } from "./db.js";
 dotenv.config() ;
 
 const VoyageClient = new VoyageAIClient( {apiKey : process.env.VOYAGE_API_KEY } )
@@ -41,7 +41,7 @@ export const createVectorSearchIndex = async() => {
     } 
 }
 
-export const runQueryVectorSearch = async(query : string,queryId : string | undefined,userId : string) => {
+export const runQueryVectorSearch = async(query : string,queryId : string | undefined,userId : string,FileId : string | null) => {
    try{
         let queryEmbedding ;
         if (queryId) {
@@ -59,7 +59,7 @@ export const runQueryVectorSearch = async(query : string,queryId : string | unde
             }) ; 
         }
         
-        const pipeline = [  
+        const pipeline : any[] = [  
             {
                 $vectorSearch : {
                     index       : "contentIndex",
@@ -77,10 +77,22 @@ export const runQueryVectorSearch = async(query : string,queryId : string | unde
             },
             {
                 $match : {    // filter by similarity threshold
-                    score : { $gte : 0.8 }
+                    score : { $gte : 0.77 }
                 }
             }
         ]
+
+
+        const match : any = {
+            score : { $gte : 0.77 }
+        };
+
+        if(FileId){
+            const File = await FileCollection.findOne({_id : FileId}) ;
+            if(File!.contents.length) match._id = { $in: File!.contents } ;
+        }
+
+        pipeline[2] = { $match : match }
 
         // @ts-ignore 
         const response = await ContentCollection.aggregate(pipeline) ;

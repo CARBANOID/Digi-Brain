@@ -44,7 +44,8 @@ export const SearchBar = memo(() =>{
         const response = await axios.post(`${BACKEND_URL}api/v1/query`,
             {
                 query   : query ,
-                queryId : queryId
+                queryId : queryId,
+                FileId  : FileContext.FileId
             },
             {
                 headers : {
@@ -52,6 +53,7 @@ export const SearchBar = memo(() =>{
                 }
             }
         )
+        console.log(response.data.searchedContent)
         FileContext.setContents(response.data.searchedContent) ; 
         queryRef.current!.value = query ;
     }

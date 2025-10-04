@@ -34,8 +34,8 @@ export const ShareBrain = memo(({ isBrainShared, NotshareBrain } : ShareBrainPro
                 }
             }
         ) ;
-
-        const shareLink = "http://localhost:5173/brain/"  + response.data.hash  ;
+        const shareLink = "http://localhost:5173/brain/"  + response.data.link  ;
+        console.log(shareLink) ;
         LinkRef.current!.value = shareLink ;
     }
 

@@ -1,7 +1,8 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useContext, useEffect, useRef, useState } from "react";
 import { IconMap } from "../icon/IconComponents";
 import { Button } from "./Button";
 import { FileSystem } from "./FileSystem";
+import { currentFileContext } from "../../pages/dashboard";
 
 
 type Variants =  "primary" | "secondary" ;
@@ -61,6 +62,8 @@ const DefaultSideBarStyle = "fixed left-0 top-0 rounded-md border-2 border-gray-
 
 export const SideBar = memo((props : SideBarProps) => {
     const DigiBrainIcon = useRef(IconMap["DigiBrain"]) ; 
+    const FileContext   = useContext(currentFileContext) ;
+
     const [SideBarVisible,setSideBar] = useState(false) ;
 
     useEffect(() => {
@@ -85,7 +88,7 @@ export const SideBar = memo((props : SideBarProps) => {
                         </div>
                         <div className="ml-4 flex pl-10 pt-2 ">
                             {   
-                                props.SideBarVisible && 
+                                !FileContext.share && props.SideBarVisible && 
                                 <div className={`flex gap-2 opacity-0 transition-all duration-1000 sm:opacity-100 ${SideBarVisible ? 'opacity-100' : ''}  sm:hidden`}> 
                                     <div> <Button varaint="primary" size ="xs" text="" startIcon={IconMap["Share"]} onClick={props.shareBrain} /> </div> 
                                     <div> <Button varaint="secondary" size ="xs" text=""startIcon={IconMap['Plus']} onClick={props.OpenPopUpBox} /> </div>

@@ -25,7 +25,7 @@ const LinkSchema = new Schema({
 const ContentSchema = new Schema({
     link        : {type: String , required : true },
     type        : {type: String , required : true },
-    title       : {type: String , required : true , unique : true },
+    title       : {type: String , required : true },
     description : {type : String} ,
     tags        : [{type : Types.ObjectId , ref : 'tag' , required : true}] ,
     userId      : {type : Types.ObjectId , ref : 'user' , required : true} ,

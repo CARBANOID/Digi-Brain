@@ -178,7 +178,7 @@ const getOEmbed = async(url : string ,ContentType : string) : Promise<string> =>
         TextToEmbed += (data.title ?? "") + " : " + (data.author_name ?? "")
         
     }
-    else if(ContentType = "Tweet"){
+    else if(ContentType == "Tweet"){
         const result    = await axios.get(`https://publish.twitter.com/oembed?url=${url}`);
         const data      = result.data ;
         const html      = data.html ; 
@@ -204,8 +204,6 @@ app.post("/api/v1/content", authMiddleWare , async(req,res) => {
 
     const content : contentType = req.body ; 
 
-    // check for same name content
-
     // if Promise.all is not used than an array of promise instead of array of tag references is returned 
     // all promises get paralley resolved now 
     const tagRefs = await Promise.all(content.tags.map(async(tagTitle : string) => {
@@ -218,8 +216,7 @@ app.post("/api/v1/content", authMiddleWare , async(req,res) => {
 
     const TextToEmbed      : string   = await getOEmbed(content.link,content.type) ; ;
     const contentEmbedding : number[] = await getEmbedding(content.type + " : " + content.title + " " + content.description + " : " + TextToEmbed) as number[];
-
-
+    
     const contentAdded = await ContentCollection.create({
         link         : content.link ,
         type         : content.type , 
@@ -278,6 +275,7 @@ app.delete("/api/v1/content", authMiddleWare ,async(req,res) => {
 
 app.post("/api/v1/brain/share", authMiddleWare , async(req,res) => {
     const canShare : boolean = req.body.share ;
+
     if(!canShare){  // deleting the user existing link
         const linkFound = await LinkCollection.findOneAndDelete( { userId : req.headers.userId } ) ;
         if(linkFound){
@@ -293,33 +291,49 @@ app.post("/api/v1/brain/share", authMiddleWare , async(req,res) => {
         return ; 
     }
 
-    const encryptedUserId : string = jwt.sign(req.headers.userId!,process.env.JWT_SHARE_SECRET!,
-        {
-            expiresIn : (process.env.LINK_EXPIRE_TIME as StringValue) || '10h'
-        }
-    ) ;
-
-    const link = encryptedUserId ;
 
     const UserFound = await LinkCollection.findOne({
         userId : req.headers.userId 
     })
 
     if(UserFound){
-        res.status(200).json({
-            hash    : UserFound.hash ,
-            message : "link already present"
+        try{
+            jwt.verify(UserFound.hash,process.env.JWT_SHARE_SECRET!) ;
+            res.status(200).json({
+                link    : UserFound.hash ,
+                message : "link already present"
+            }) 
+            return ;
+        }
+        catch(e){
+            // Link / Token Expired Error
+        }
+    }
+ 
+    const encryptedUserId : string = jwt.sign({userId : req.headers.userId!},process.env.JWT_SHARE_SECRET!,
+        {
+           expiresIn : (process.env.JWT_EXPIRE_TIME as StringValue) || '4h' 
+        }
+    ) ;
+
+
+    if(UserFound){
+        await LinkCollection.updateOne({
+            userId : req.headers.userId 
+        },
+        {
+            hash : encryptedUserId ,
         }) 
-        return
+    }
+    else {
+        await LinkCollection.create({
+            hash : encryptedUserId ,
+            userId : req.headers.userId 
+        }) 
     }
 
-    await LinkCollection.create({
-        hash : encryptedUserId ,
-        userId : req.headers.userId 
-    }) 
-
     res.status(200).json({
-        link : link ,
+        link : encryptedUserId ,
         message : "link created succesfully"
     }) 
 }) ;
@@ -328,15 +342,15 @@ app.post("/api/v1/brain/share", authMiddleWare , async(req,res) => {
 app.get("/api/v1/brain/:shareLink", async (req,res) => {
     const shareLink : string = req.params.shareLink ;
 
-    // hashing using jwt 
-    jwt.verify(shareLink,process.env.JWT_SHARE_SECRET!,async(err,payload) => {
+    jwt.verify(shareLink,process.env.JWT_SHARE_SECRET!,async(err,payload : any) => {
         if(err){
           res.status(403).json({
             message : "The link is not valid"
           }) 
           return ;
         }
-        const userId = payload ;
+
+        const userId = payload.userId ;
         const userLink = await LinkCollection.findOne( { hash : shareLink , userId : userId } )
 
         if(!userLink){
@@ -348,7 +362,7 @@ app.get("/api/v1/brain/:shareLink", async (req,res) => {
 
         const userContent = await ContentCollection.find( {
             userId : userId 
-        }).populate("userId","username -_id").populate("tags","title -_id").sort("type") ;
+        }).populate("userId","username -_id").populate("tags","title -_id") ;
 
         res.status(200).json({
             userContent : userContent 
@@ -501,10 +515,10 @@ app.get("/api/v1/query",authMiddleWare,async(req,res) => {
 app.post("/api/v1/query",authMiddleWare,async(req,res) => {
     const userId = req.headers.userId ;
     const query   : string = req.body.query ;
-    const queryId : string | undefined = req.body.queryId ;
+    const queryId : string = req.body.queryId ;
+    const FileId  : string | null = req.body.FileId  ; 
 
-    const content = await runQueryVectorSearch(query,queryId,userId as string) ;
-    // console.log(content) ;
+    const content = await runQueryVectorSearch(query,queryId,userId as string,FileId) ;
 
     res.status(200).json( { 
         searchedContent : content 
