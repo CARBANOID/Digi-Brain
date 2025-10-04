@@ -1,7 +1,7 @@
 1) Install Typescript
 
 ```bash
-npm install typescript -D
+npm install typescript
 ```
 
 2) Install all npm Packages
