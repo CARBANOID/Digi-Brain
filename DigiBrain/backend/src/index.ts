@@ -9,7 +9,7 @@ import type { StringValue } from "ms";
 
 import { UserCollection , TagCollection , LinkCollection , ContentCollection, FolderCollection, FileCollection, QueryCollection } from './db.js'  ;
 import { authMiddleWare } from './auth.js'
-import { createVectorSearchIndex, getEmbedding, runQueryVectorSearch } from "./vectorSearh.js";
+import { createVectorSearchIndex, getEmbedding, runQueryVectorSearch } from "./vectorSearch.js";
 
 import * as cheerio from 'cheerio'
 import * as dotenv from 'dotenv' ;
