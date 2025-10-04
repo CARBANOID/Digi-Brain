@@ -1,3 +1,5 @@
+**Do This in `backend` directory**
+
 1) Install Typescript
 
 ```bash
