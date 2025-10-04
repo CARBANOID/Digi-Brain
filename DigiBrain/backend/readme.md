@@ -11,8 +11,10 @@ npm install typescript
 ```bash
 npm install
 ```
+
+3) Add a .env file ( take reference from `.env.example`)
   
-2) To run the Project Do : 
+4) To run the Project Do : 
 
 ```bash
 npm run dev
