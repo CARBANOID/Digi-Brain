@@ -55,7 +55,7 @@ export const DashBoard = ({ share } : { share : boolean } ) => {
 
             <div className="px-2 mt-35 pl-6 sm:pl-60 md:pl-77 lg:pl-80">
                 <div className="columns-1 lg:gap-0 lg:columns-2 xl:columns-3 ">
-                {contents.map(( {_id,type,title,description,link} : any) =>  <Card key={_id} share = {share} contentId = {_id} RefreshContent = {RefreshContent} varaint="primary" title={title} size="sm" description = {description} ContentType={type} ContentPage={ContentPage} url={link} /> )}
+                {contents.map(( {_id,type,title,description,tags,link} : any) =>  <Card key={_id} share = {share} contentId = {_id} RefreshContent = {RefreshContent} varaint="primary" title={title} size="sm" description = {description}  tags={tags} ContentType={type} ContentPage={ContentPage} url={link} /> )}
                 </div>
             </div>
         </div>

@@ -175,7 +175,7 @@ const getOEmbed = async(url : string ,ContentType : string) : Promise<string> =>
     if(ContentType == "Youtube"){
         const result = await axios.get(`https://www.youtube.com/oembed?url=${url}&format=json`) ; 
         const data   = result.data ; 
-        TextToEmbed += (data.title ?? "") + " : " + (data.author_name ?? "")
+        TextToEmbed += (data.title ?? "") + " " + (data.author_name ?? "")
         
     }
     else if(ContentType == "Tweet"){
@@ -184,7 +184,7 @@ const getOEmbed = async(url : string ,ContentType : string) : Promise<string> =>
         const html      = data.html ; 
         const $         = cheerio.load(html) ;  // html parser
         const tweetText = $("p").text() ; 
-        TextToEmbed    += (data.title ?? "") + " : " + (data.author_name ?? "") + " : " + tweetText ;
+        TextToEmbed    += (data.title ?? "") + " " + (data.author_name ?? "") + " " + tweetText ;
     }
     return TextToEmbed ; 
 }
@@ -202,11 +202,14 @@ app.post("/api/v1/content", authMiddleWare , async(req,res) => {
         return ; 
     }
 
-    const content : contentType = req.body ; 
+    const content     : contentType = req.body ; 
+    let TextToEmbed : string        = await getOEmbed(content.link,content.type) ; ;
+
 
     // if Promise.all is not used than an array of promise instead of array of tag references is returned 
     // all promises get paralley resolved now 
     const tagRefs = await Promise.all(content.tags.map(async(tagTitle : string) => {
+        TextToEmbed += (" " + tagTitle )
         const tagFound = await TagCollection.findOne( { title : tagTitle } ) ; 
         if(tagFound) return tagFound._id ; 
 
@@ -214,8 +217,10 @@ app.post("/api/v1/content", authMiddleWare , async(req,res) => {
         return tagCreated._id ;
     })) ;
 
-    const TextToEmbed      : string   = await getOEmbed(content.link,content.type) ; ;
-    const contentEmbedding : number[] = await getEmbedding(content.type + " : " + content.title + " " + content.description + " : " + TextToEmbed) as number[];
+    TextToEmbed += (" " + content.type + " : " + content.title + " " + content.description) ;
+    console.log(TextToEmbed)
+    
+    const contentEmbedding : number[] = await getEmbedding(TextToEmbed) as number[];
     
     const contentAdded = await ContentCollection.create({
         link         : content.link ,

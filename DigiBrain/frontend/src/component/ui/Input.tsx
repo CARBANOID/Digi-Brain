@@ -16,6 +16,7 @@ type InputProps = {
     ref?           : Ref<HTMLInputElement> | Ref<HTMLTextAreaElement> |  Ref<HTMLSelectElement> ;
     onInput?       : (e : React.InputEvent<HTMLInputElement>) => void , 
     showText?      : boolean // only for password
+    onKeyDown?     : () => void
 }
 
 namespace InputStyle{
@@ -96,6 +97,7 @@ export const Input = memo(( props : InputProps ) => {
             <input type="text" onInput={ props.onInput ? (e : React.InputEvent<HTMLInputElement>) => props.onInput!(e) : () => {} } 
              ref={props.ref as Ref<HTMLInputElement> } spellCheck= {false} placeholder= {props.placeholder} 
              className={` ${props.customStyle ? props.customStyle : DefaultInputStyle }  ${props.customPadding}  ${InputStyle.varaint[props.inputVaraint]}  ${InputStyle.size[props.size]}`}
+             onKeyDown={ props.onKeyDown ? (e : React.KeyboardEvent<HTMLInputElement>) => { if(e.key == "Enter") props.onKeyDown!() ; } : () => {} } 
             />
            }
 

@@ -27,7 +27,13 @@ export const FileSystem = memo(() => {
     const RefreshCurrentFolder = async() => setFolders(await RefreshFolders()) ;
     const [FolderInputScreen,SetFolderInputScreen] = useState(false) ; 
 
-    const FileContext = useContext(currentFileContext) ;
+    const FileContext  = useContext(currentFileContext) ;
+
+    const createFolder =  async() => {
+        SetFolderInputScreen(false) ; 
+        await useAddFileFolder(folderNameRef.current!.value) ;
+        await RefreshFolders() ; 
+    }
 
     return(
         <div className=" items-center p-3 sm:p-2 md:p-4 "> 
@@ -52,16 +58,16 @@ export const FileSystem = memo(() => {
                         {
                         FolderInputScreen && 
                         <div className="flex items-center">
-                            <div> <Input inputVaraint="Folder-File" size="fs" ref={folderNameRef} customStyle="px-2 rounded-md" placeholder="name"/> </div>
-                            <div className="bg-gray-300 cursor-pointer ml-2" onClick={ async() => {
-                                    SetFolderInputScreen(false) ; 
-                                    await useAddFileFolder(folderNameRef.current!.value) ;
-                                    await RefreshFolders() ; 
-                            }}>
+                            <div> 
+                                <Input inputVaraint="Folder-File" size="fs" ref={folderNameRef} customStyle="px-2 rounded-md" placeholder="name" onKeyDown={createFolder}/> 
+                            </div>
+                            
+                            <div className="bg-gray-300 cursor-pointer ml-2" onClick={createFolder}>
                                 <OkIcon.current size="sm" customSize="size-5"/>
                             </div>
+
                             <div className="bg-gray-300  cursor-pointer ml-2" onClick={ () => {
-                                    SetFolderInputScreen(false) ; 
+                                SetFolderInputScreen(false) ; 
                             }}>
                                 <NotOkIcon.current size="sm" customSize="size-5"/>
                             </div>
@@ -88,12 +94,18 @@ const FolderDiv = memo((props : FolderFileDivProps) => {
     const [addFile,setAddFile]           = useState(false) ;
     const [addFolder,setAddFolder]       = useState(false) ;
 
-
     const folderRef = useRef<HTMLInputElement>(null) ;
     const fileRef   = useRef<HTMLInputElement>(null) ;
 
     let {Folders,setFolders,RefreshFolders} = useGetFolder(props.FolderId) ;
     const RefreshCurrentFolder = async() => setFolders(await RefreshFolders()) ;
+
+    const createChildFolderFile =  async() => {
+        addFolder ? setAddFolder(false) : setAddFile(false) ;
+        await useAddFileFolder((addFolder ? folderRef.current!.value : undefined), (addFile ? fileRef.current!.value : undefined),props.FolderId) ;
+        await RefreshFolders!() ;
+        setShowChilds(true) ;
+    }
 
     const FileContext = useContext(currentFileContext) ;
 
@@ -115,7 +127,7 @@ const FolderDiv = memo((props : FolderFileDivProps) => {
                    !FileContext.share &&
                     <div className="flex gap-2 items-center">
                          <div onClick={() => {setAddFolder(true) ; setAddFile(false)} }> <AddFolderIcon.current size="sm" customSize="size-5"/> </div>
-                         <div onClick={() => {setAddFile(true) ; setAddFolder(false)} }>  <AddFileIcon.current size="sm" customSize="size-4"/> </div>
+                         <div onClick={() => {setAddFile(true)   ; setAddFolder(false)} }>  <AddFileIcon.current size="sm" customSize="size-4"/> </div>
                          <div onClick={async() => { 
                             await useDeleteFileFolder(props.FolderId,undefined,props.ParentFolderId) ; 
                             await props.RefreshParentFolder() ;
@@ -152,15 +164,10 @@ const FolderDiv = memo((props : FolderFileDivProps) => {
             (addFolder || addFile) && 
                 <div className="flex items-center mt-1">
                     <div className="ml-2"> 
-                        <Input inputVaraint="Folder-File" size="fs" ref={(addFolder) ? folderRef : fileRef}
+                        <Input inputVaraint="Folder-File" size="fs" ref={(addFolder) ? folderRef : fileRef} onKeyDown={createChildFolderFile}
                         customStyle="px-2 py-3 max-w-37 rounded-md" placeholder={`${addFolder ? "Folder Name" : "File Name"}`}/> 
                     </div>
-                    <div className="cursor-pointer ml-2 bg-gray-300 rounded-full border" onClick={ async() => {
-                        addFolder ? setAddFolder(false) : setAddFile(false) ;
-                        await useAddFileFolder((addFolder ? folderRef.current!.value : undefined), (addFile ? fileRef.current!.value : undefined),props.FolderId) ;
-                        await RefreshFolders!() ;
-                        setShowChilds(true) ;
-                    }}> 
+                    <div className="cursor-pointer ml-2 bg-gray-300 rounded-full border" onClick={ createChildFolderFile }> 
                     <OkIcon.current size="sm" customSize="size-4"/>
                     </div>
                     <div className="cursor-pointer ml-2 bg-gray-300 border rounded-full" onClick={ () => {

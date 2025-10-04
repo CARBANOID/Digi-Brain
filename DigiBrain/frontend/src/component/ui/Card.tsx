@@ -89,7 +89,6 @@ break-inside-avoid ensures each card stays intact inside its column, making the 
 
 
 export const Card = memo((props : CardProps) => {
-
     const ContentIcon = IconMap[props.ContentType] ; // The Content Icon needs to re-render 
     const ShareIcon   = useRef(IconMap["Share"])           ;
     const DeleteIcon  = useRef(IconMap["Delete"])          ;
@@ -152,13 +151,14 @@ export const Card = memo((props : CardProps) => {
                     { props.ContentType == "Youtube" && <Youtube url = {props.url} />}
                 </div>
                 <div className="pt-3 flex flex-wrap gap-3">
-                    { props.tags?.map((value,index) => <Tag key={index + 1} varaint="primary" size= {props.size} text= {value} /> ) }
+                    { props.tags!.map(( {title } : any ,index : number) => <Tag key={index + 1} varaint="primary" size= {props.size} text= {title} /> ) }
                 </div>
             </div>
         }
         </div>   
     );
 })
+
 
 
 export const Tag = memo((props : TagProps) =>{
