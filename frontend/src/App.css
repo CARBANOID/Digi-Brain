@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/* Hide scrollbar for all browsers */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari, Opera */
+}
+
+
+/* Water Fill Animation */
+@keyframes waterFill {
+  0% {
+    background-size: 100% 0%;
+    background-position: bottom;
+  }
+  100% {
+    background-size: 100% 100%;
+    background-position: bottom;
+  }
+}
+
+@keyframes waterEmpty {
+  0% {
+    background-size: 100% 100%;
+    background-position: bottom;
+  }
+  100% {
+    background-size: 100% 0%;
+    background-position: bottom;
+  }
+}
+
+.water-fill {
+  background-image: linear-gradient(to top, rgba(79, 70, 229, 0.6), rgba(255, 255, 255, 0));
+  background-repeat: no-repeat;
+  background-position: bottom;
+  background-size: 100% 0%;
+  animation: waterFill var(--anim-time, 2s) forwards;
+}
+
+.water-empty {
+  background-image: linear-gradient(to top, rgba(79, 70, 229, 0.6), rgba(255, 255, 255, 0));
+  background-repeat: no-repeat;
+  background-position: bottom;
+  background-size: 100% 100%;
+  animation: waterEmpty var(--anim-time, 2s) forwards;
+}
