@@ -190,14 +190,14 @@ const FileDiv = ({FileId , ParentFolderId , RefreshParentFolder} : FolderFileDiv
     const {contents,RefreshContent} = useContent(FileId) ;
 
     const RefreshFileContent = async() =>{
-        const newContents = await RefreshContent() ;
-        fsContext.setContents(newContents.contents) ;
+        const newContent = await RefreshContent() ;
+        fsContext.setContents(newContent.FileContent) ;
     }
 
     return(
     <div className="cursor-pointer min-w-50 w-max p-1 border-2 border-gray-600 hover:bg-slate-300 rounded-sm mt-1 bg-gray-200" onClick={ () => {
         fsContext.setFileId(FileId) ;
-        fsContext.setContents(contents.contents) ;
+        fsContext.setContents(contents.FileContent) ;
         fsContext.RefreshFileContentRef.current = RefreshFileContent ;
     }} > 
         <div className="flex justify-between items-center">

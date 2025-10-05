@@ -145,12 +145,18 @@ app.get("/api/v1/content", authMiddleWare , async(req,res) => {
     if(FileId){
         const File = await FileCollection.findOne({
             _id : FileId ,
-        }).populate("contents") ;
+        }).populate({
+            path : "contents",
+            select : { embedding : 0 , userId : 0},
+            populate :[
+              { path : "tags" , select : {title : 1 , _id : 0}} 
+            ]
+        }) ;
 
         res.status(200).json({
             userContent : { 
-                FileName  : File!.fileName ,
-                contents  : File!.contents 
+                FileName    : File!.fileName ,
+                FileContent : File!.contents
             }
         }) ;
         return ;
@@ -163,7 +169,7 @@ app.get("/api/v1/content", authMiddleWare , async(req,res) => {
 
     const userContent = await ContentCollection.find( {
         userId : userId 
-    } ).populate("userId","username  -_id").populate("tags","title -_id") ;
+    } ).populate("tags","title -_id").select({embedding : 0 , userId : 0}) ;
 
     res.status(200).json({ 
         userContent : userContent 
@@ -218,7 +224,6 @@ app.post("/api/v1/content", authMiddleWare , async(req,res) => {
     })) ;
 
     TextToEmbed += (" " + content.type + " : " + content.title + " " + content.description) ;
-    console.log(TextToEmbed)
     
     const contentEmbedding : number[] = await getEmbedding(TextToEmbed) as number[];
     
