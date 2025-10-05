@@ -26,20 +26,20 @@ export const PopUpBox = memo(({ isPopUpOpen , ClosePopUpBox , RefreshContent  } 
     const [tags,setTags] = useState<Array<string>>([]) ;
     const InputTagRef    = useRef<HTMLInputElement>(null) ;
     
-    const createTag      = () =>{
+    const createTag = () =>{
         if(InputTagRef.current!.value == "") return ; 
         setTags([...tags,InputTagRef.current!.value]) ;
         InputTagRef.current!.value = "" ;
     }
 
-    const deleteTag     = (index : number) =>{
+    const deleteTag = (index : number) =>{
         const newTags = [...tags] ; 
         newTags.splice(index,1) ;
         setTags(newTags) ;
     }
 
-    const fileContext    = useContext(currentFileContext) ;
-    const addContent     = async() => {        
+    const fileContext = useContext(currentFileContext) ;
+    const addContent  = async() => {        
 
         if(titleRef.current!.value == ""){
             titleRef.current!.focus() ; 

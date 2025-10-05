@@ -311,7 +311,12 @@ app.post("/api/v1/brain/share", authMiddleWare , async(req,res) => {
             return ;
         }
         catch(e){
-            // Link / Token Expired Error
+            if(!(e instanceof jwt.TokenExpiredError)){
+                res.json({
+                    message : "Token Error"
+                })
+                return ;
+            }
         }
     }
  

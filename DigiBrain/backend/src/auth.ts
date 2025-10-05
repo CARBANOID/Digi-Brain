@@ -8,12 +8,24 @@ dotenv.config() ;
 // Method 1 
 function authMiddleWare(req :any,res :any,next : NextFunction){
     const token : string = req.headers.token ;
-    jwt.verify(token,process.env.JWT_SECRET!,(err,payload : any) => {
+    jwt.verify(token,process.env.JWT_SECRET!,(err : jwt.VerifyErrors | null,payload : any) => {
         if(err){
-            res.status(403).json({
-                message : "You are not logged in"
-            })
-            return ; 
+            if(err instanceof jwt.TokenExpiredError){
+                // Refresh Token if expired but not essentially required 
+                // res.headers.token = jwt.sign({userId : payload.userId},process.env.JWT_SECRET!) ; 
+                res.status(403).json({
+                    message : "Token Expired" ,
+                    logout : true
+                })
+                return ;
+            }
+            else{
+                res.status(403).json({
+                    message : "You are not logged in",
+                    logout  : true
+                })
+                return ; 
+            }
         }
         req.headers.userId = payload.userId ; 
         next() ;
