@@ -31,6 +31,12 @@ export const createVectorSearchIndex = async() => {
                 ]
             }
         }
+
+        const existingSearchIndex = (await ContentCollection.listSearchIndexes()) ; 
+        const searchIndexpresent : boolean = existingSearchIndex.some((si) : any => (si.name == searchIndex.name) )
+
+        if(searchIndexpresent) return ;
+
         const result = await ContentCollection.createSearchIndex(searchIndex) ;
         console.log( result + " : Content Vector Search Index Creation Successful") ;
     }
@@ -45,7 +51,6 @@ export const runQueryVectorSearch = async(query : string,queryId : string | unde
    try{
         let queryEmbedding ;
         if (queryId) {
-            // const queryFound = await QueryCollection.findOne( { query : query } ) ; 
             const queryFound = await QueryCollection.findOne( { _id : queryId } ) ; 
             queryEmbedding = queryFound!.embedding ;
         }
@@ -76,9 +81,12 @@ export const runQueryVectorSearch = async(query : string,queryId : string | unde
                 }
             },
             {
-                $match : {    // filter by similarity threshold
-                    score : { $gte : 0.77 }
-                }
+                $lookup : {
+                    from : "tags", // target collection
+                    localField : "tags",
+                    foreignField : "_id",
+                    as : "tags"  // populate field name
+                } 
             }
         ]
 
@@ -92,14 +100,13 @@ export const runQueryVectorSearch = async(query : string,queryId : string | unde
             if(File!.contents.length) match._id = { $in: File!.contents } ;
         }
 
-        pipeline[2] = { $match : match }
+        pipeline.push({ $match : match }) ;
 
         // @ts-ignore 
         const response = await ContentCollection.aggregate(pipeline) ;
         return response ;
     }
     catch(e){
-        // console.log(e) ;
         return [] ;
     }  
 } 

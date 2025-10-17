@@ -149,7 +149,7 @@ app.get("/api/v1/content", authMiddleWare , async(req,res) => {
             path : "contents",
             select : { embedding : 0 , userId : 0},
             populate :[
-              { path : "tags" , select : {title : 1 , _id : 0}} 
+              { path : "tags" } 
             ]
         }) ;
 
@@ -169,7 +169,7 @@ app.get("/api/v1/content", authMiddleWare , async(req,res) => {
 
     const userContent = await ContentCollection.find( {
         userId : userId 
-    } ).populate("tags","title -_id").select({embedding : 0 , userId : 0}) ;
+    } ).populate("tags","title").select({embedding : 0 , userId : 0}) ;
 
     res.status(200).json({ 
         userContent : userContent 
@@ -556,7 +556,9 @@ app.delete("/api/v1/query",authMiddleWare,async(req,res) => {
 
 async function run(){
     await mongoose.connect(process.env.MONGOOSE_CONNECTION_STRING!) ; 
-    // await createVectorSearchIndex() ; // run only one time  // creating a search index in MongoDB Atlas -> if shows no error and show falied then go to your cluster to check if it show pending
+    // creating a search index in MongoDB Atlas -> if shows no error and show falied then go to your cluster to check if it show pending
+    // you need to be online to connect cloud mongo DB atalas
+    await createVectorSearchIndex() ; //run it once to create search index and then comment it // no need to run again since the same name search index won't create again
     app.listen(3000) ; 
 }
 

@@ -4,6 +4,8 @@ import { IconMap } from "../icon/IconComponents";
 import { BACKEND_URL } from "../../pages/config";
 import { currentFileContext } from "../../pages/dashboard";
 import axios from "axios";
+import { useLoading } from "../../hooks/useLoading";
+import { QueryLoader } from "./Loader";
 
 export const SearchBar = memo(() =>{
     const SearchIcon = useRef(IconMap["Search"]) ;
@@ -53,7 +55,6 @@ export const SearchBar = memo(() =>{
                 }
             }
         )
-        console.log(response.data.searchedContent)
         FileContext.setContents(response.data.searchedContent) ; 
         queryRef.current!.value = query ;
     }
@@ -99,14 +100,23 @@ const QueryBox = memo(( {queryId, query , searchContent , refreshQueries , Close
                     }   
                 )
         console.log(response.data.message)       
+        setLoading(true) ;
         await refreshQueries() ;  
     }
 
+    const {Load,setLoading,loading} = useLoading() ; 
+    useEffect(() =>{
+        const clock = Load(300) ;
+        return () => clearTimeout(clock) ;
+    },[])
+
+    if(loading) return <QueryLoader/>;
+     
     return(
         <div>
             <div className="cursor-pointer bg-white hover:bg-gray-200 break-words rounded-md px-3 py-2  w-70 sm:w-65 md:w-78 lg:w-95 xl:w-150">
                 <div className="flex items-star justify-between">
-                <div className="w-full" onClick={async() => { await searchContent(query,queryId) ; CloseSearchBox()} }> 
+                <div className="w-full" onClick={async() => {CloseSearchBox() ; await searchContent(query,queryId) ;} }> 
                     <div> {query}  </div>
                 </div>
                 <div className="" onClick={DeleteQuery}> <DeleteIcon.current size="sm"/> </div>

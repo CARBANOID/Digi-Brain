@@ -1,4 +1,4 @@
-import { memo, useContext, useRef, useState } from "react";
+import { memo, useContext, useEffect, useRef, useState } from "react";
 import { IconMap } from "../icon/IconComponents";
 import { useGetFolder } from "../../hooks/useGetFolder";
 import { useAddFileFolder } from "../../hooks/useAddFileFolder";
@@ -6,6 +6,8 @@ import { Input } from "./Input";
 import { currentFileContext } from "../../pages/dashboard";
 import { useContent } from "../../hooks/useGetContent";
 import { useDeleteFileFolder } from "../../hooks/useDeleteFileFolder";
+import { useLoading } from "../../hooks/useLoading";
+import { FileFolderLoader , FileSystemLoader} from "./Loader";
 
 
 type FolderFileDivProps = {
@@ -34,6 +36,15 @@ export const FileSystem = memo(() => {
         await useAddFileFolder(folderNameRef.current!.value) ;
         await RefreshFolders() ; 
     }
+
+    const {Load,loading} = useLoading() ;
+
+    useEffect(() =>{
+        const clock = Load(1500) ; 
+        return () => clearTimeout(clock) ;
+    },[loading])
+
+    if(loading) return <FileSystemLoader/>
 
     return(
         <div className=" items-center p-3 sm:p-2 md:p-4 "> 
@@ -87,12 +98,12 @@ const FolderDiv = memo((props : FolderFileDivProps) => {
     const OkIcon        = useRef(IconMap["Ok"]) ;
     const NotOkIcon     = useRef(IconMap["NotOk"]) ;
     const DeleteIcon    = useRef(IconMap["Delete"]) ;
-
+ 
     const [ShowChilds,setShowChilds] = useState(false) ;
     const ToggleChildVisibilty = ()  => setShowChilds(!ShowChilds)
 
-    const [addFile,setAddFile]           = useState(false) ;
-    const [addFolder,setAddFolder]       = useState(false) ;
+    const [addFile,setAddFile]     = useState(false) ;
+    const [addFolder,setAddFolder] = useState(false) ;
 
     const folderRef = useRef<HTMLInputElement>(null) ;
     const fileRef   = useRef<HTMLInputElement>(null) ;
@@ -108,9 +119,17 @@ const FolderDiv = memo((props : FolderFileDivProps) => {
     }
 
     const FileContext = useContext(currentFileContext) ;
+    const {Load,setLoading,loading} = useLoading() ;
+
+    useEffect(() =>{
+        const clock = Load(500) ; 
+        return () => clearTimeout(clock) ;
+    },[loading])
+
+    if(loading) return <FileFolderLoader/>
 
     return(
-        <div>
+        <div> 
             {/* Folder Style */}
             <div className="cursor-pointer min-w-55 sm:min-w-40 md:min-w-50 w-max p-1 border-2 border-gray-600 rounded-sm mt-1 bg-gray-200 hover:bg-slate-300" onClick={ToggleChildVisibilty}>
                  <div className="flex justify-between items-center">
@@ -129,6 +148,7 @@ const FolderDiv = memo((props : FolderFileDivProps) => {
                          <div onClick={() => {setAddFolder(true) ; setAddFile(false)} }> <AddFolderIcon.current size="sm" customSize="size-5"/> </div>
                          <div onClick={() => {setAddFile(true)   ; setAddFolder(false)} }>  <AddFileIcon.current size="sm" customSize="size-4"/> </div>
                          <div onClick={async() => { 
+                            setLoading(true) ;
                             await useDeleteFileFolder(props.FolderId,undefined,props.ParentFolderId) ; 
                             await props.RefreshParentFolder() ;
                             FileContext.setFileId(null) ;
@@ -194,6 +214,15 @@ const FileDiv = ({FileId , ParentFolderId , RefreshParentFolder} : FolderFileDiv
         fsContext.setContents(newContent.FileContent) ;
     }
 
+    const {Load,setLoading,loading} = useLoading() ;
+
+    useEffect(() =>{
+        const clock = Load(500) ; 
+        return () => clearTimeout(clock) ;
+    },[loading])
+
+    if(loading) return <FileFolderLoader/>
+
     return(
     <div className="cursor-pointer min-w-50 w-max p-1 border-2 border-gray-600 hover:bg-slate-300 rounded-sm mt-1 bg-gray-200" onClick={ () => {
         fsContext.setFileId(FileId) ;
@@ -215,6 +244,7 @@ const FileDiv = ({FileId , ParentFolderId , RefreshParentFolder} : FolderFileDiv
                 <div className="flex">
                     <div onClick={async() => 
                         {
+                            setLoading(true) ;
                             await useDeleteFileFolder(undefined,FileId,ParentFolderId)
                             await RefreshParentFolder() ;
                         } 

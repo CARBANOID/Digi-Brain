@@ -39,7 +39,7 @@ export const DashBoard = ({ share } : { share : boolean } ) => {
     const [FileId,setFileId]            = useState<any>(null) ; 
 
     const RefreshFileContentRef = useRef<() => Promise<any>>(async () => {});
-      
+
     return(
     <currentFileContext.Provider value = {{setContents : setContents,contents : contents ,FileId : FileId ,setFileId : setFileId, 
     ChangePage : ChangePage, RefreshContent : RefreshContent , RefreshFileContentRef : RefreshFileContentRef , share : share}} >
@@ -88,7 +88,6 @@ const TopBar = memo((props:any) =>{
     );
 })
 
-
 const MenuBar = (props : any) =>{
     const navigate = useNavigate() ; 
     const LogOut = () =>{
@@ -98,7 +97,7 @@ const MenuBar = (props : any) =>{
 
     const FileContext = useContext(currentFileContext) ;
     return(
-        <div className={`fixed ${props.MenuBarVisible ? "h-full" : "opacity-68" } top-22 right-0  bg-white transition-all duration-1000`}>
+        <div className={`fixed ${props.MenuBarVisible ? "h-full opacity-70" : "opacity-100" } top-22 right-0  bg-white transition-all duration-1000`}>
             {!props.MenuBarVisible && <SideBarItem varaint="primary" size="sm" Icon="Down" onClick={props.OpenMenuBar}/>}
             {
             props.MenuBarVisible &&

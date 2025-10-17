@@ -1,8 +1,10 @@
-import { memo, useRef , useEffect, useContext} from "react";
+import { memo, useRef , useEffect, useContext, Suspense, lazy} from "react";
 import { IconMap } from "../icon/IconComponents";
 import axios from "axios";
 import { BACKEND_URL } from "../../pages/config";
 import { currentFileContext } from "../../pages/dashboard";
+import { useLoading } from "../../hooks/useLoading";
+import { CardLoader } from "./Loader";
 
 type Variants =  "primary" | "secondary" ;
 type Sizes    =  "sm" | "md" | "lg" 
@@ -81,21 +83,30 @@ namespace TagStyle{
     }
 }
 
+ 
+const Tweet = lazy(() => import("./embedScripts/Tweet"))
+const Youtube = lazy(() => import("./embedScripts/Youtube"))
+
 /*
 columns lets the browser flow cards like text.
 Without break-inside-avoid, a tall card can be split across two columns (hence the "cut in half").
 break-inside-avoid ensures each card stays intact inside its column, making the layout scroll correctly.
 */
 
-
 export const Card = memo((props : CardProps) => {
     const ContentIcon = IconMap[props.ContentType] ; // The Content Icon needs to re-render 
     const ShareIcon   = useRef(IconMap["Share"])           ;
     const DeleteIcon  = useRef(IconMap["Delete"])          ;
     const FileContext = useContext(currentFileContext)     ; 
+    const {loading,setLoading,Load} = useLoading() ; 
+
+    useEffect(() =>{
+        const clock = Load(2000) ;
+        return () => clearTimeout(clock) ;
+    },[loading])
 
     const deleteCard = async() => {
-        const response = await axios.delete(`${BACKEND_URL}api/v1/content`,
+        await axios.delete(`${BACKEND_URL}api/v1/content`,
             {
                 headers : {
                     token : localStorage.getItem("token") ,
@@ -104,15 +115,16 @@ export const Card = memo((props : CardProps) => {
                 }
             }
         )
-        console.log(response.data) ;
-
+        setLoading(true)
         if(FileContext.FileId) await FileContext.RefreshFileContentRef.current() ;
         else await props.RefreshContent() ;    
     } 
 
     return(
         <div className={`pb-8 ${((props.ContentPage == "Home") || (props.ContentPage == props.ContentType)) ? 'block' : 'hidden'} `}>
-            {   
+            {
+            loading ? <CardLoader CardDefaultStyles={CardDefaultStyles}/>: 
+            
             <div className ={`${CardStyle.varaint[props.varaint]} ${CardStyle.padding[props.size]} ${CardStyle.size[props.size]} ${CardDefaultStyles}`}>
                 <div className="flex justify-between items-start">
                     <div className="flex">
@@ -145,21 +157,19 @@ export const Card = memo((props : CardProps) => {
                 </div>
 
                 <div className="pt-5">
-                    <div>
+                    <Suspense fallback={<CardLoader CardDefaultStyles={CardDefaultStyles}/>}>
                     { props.ContentType == "Tweet" && <Tweet url = {props.url} /> }  
-                    </div>  
                     { props.ContentType == "Youtube" && <Youtube url = {props.url} />}
+                    </Suspense>
                 </div>
                 <div className="pt-3 flex flex-wrap gap-3">
-                    { props.tags!.map(( {title } : any ,index : number) => <Tag key={index + 1} varaint="primary" size= {props.size} text= {title} /> ) }
+                    { props.tags!.map(( tag : any ) => <Tag key={tag._id} varaint="primary" size= {props.size} text= {tag.title} /> ) }
                 </div>
             </div>
         }
         </div>   
     );
 })
-
-
 
 export const Tag = memo((props : TagProps) =>{
     return( 
@@ -170,46 +180,3 @@ export const Tag = memo((props : TagProps) =>{
     </>
     )
 })
-
-type urlType = { 
-    url? : string ,
-    size? : Sizes 
-}
-
-
-const Tweet = memo((props : urlType) => {
-
-    // Lazy Loading Twitter Script
-    useEffect(() => {
-    if (!(window as any).twttr) {  // .twttr object form when the script is loaded first time
-        const script = document.createElement("script");
-        script.src = "https://platform.twitter.com/widgets.js";
-        script.async = true;
-        document.body.appendChild(script);
-    } 
-    else (window as any).twttr.widgets.load();
-    }, [props.url]);
-
-    return(
-        <div className="w-70">
-            <blockquote className = "twitter-tweet">
-            <a href = {props.url?.replace("x.com","twitter.com")}></a> 
-            </blockquote>
-        </div>
-    );
-})
-
-const Youtube = memo((props : urlType) => {
-    return (
-        <>
-            <iframe 
-                src= { props.url!.replace("watch?v=","embed/") }
-                className="w-full rounded-lg"
-                title="YouTube video player" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                referrerPolicy="strict-origin-when-cross-origin" allowFullScreen>
-             </iframe>        
-        </>
-    )
-})
-

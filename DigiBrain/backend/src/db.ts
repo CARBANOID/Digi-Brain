@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-import { number, string } from "zod";
-import { required } from "zod/mini";
 
 const Schema = mongoose.Schema ; 
 const Types = mongoose.Types ; 
